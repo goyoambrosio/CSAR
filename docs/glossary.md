@@ -31,13 +31,13 @@ A CSAR user. Each tenant has an isolated project within LXD, a dedicated virtual
 
 ## Layers
 
-**Layer 0 — Infrastructure Core**
+### **Layer 0 — Infrastructure Core**
 The stable, conservative substrate of the CSAR system. Responsible for host OS management, storage pools, core networking (routing, DNS, NTP), long-lived services (overlay network controller, image server, MQTT broker), and hardware driver management. Changes at this layer are infrequent and require administrator intervention. A failure at Layer 0 makes the entire multi-user ecosystem unavailable.
 
-**Layer 1 — Platform & Multi-User Orchestration**
+### **Layer 1 — Platform & Multi-User Orchestration**
 The execution fabric built on LXC/LXD system containers. Provides per-user project isolation, per-user virtual bridge networks, container lifecycle management (launch, stop, snapshot, copy, move), GPU and device passthrough, cross-host container portability, and DDS discovery and routing services. Changes at this layer affect individual users but do not destabilize the infrastructure.
 
-**Layer 2 — Compute & Acceleration**
+### **Layer 2 — Compute & Acceleration**
 The dynamic workload layer where ROS 2 nodes, robotic processing pipelines, and GPU-accelerated processes execute. This layer is intentionally disposable: a broken container at Layer 2 can be deleted and recreated from a snapshot or image without affecting the layers below. The key property of Layer 2 is near-native hardware access with full isolation.
 
 ---
