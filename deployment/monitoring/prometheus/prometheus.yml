@@ -1,0 +1,29 @@
+# Prometheus Configuration Template for CSAR
+#
+# This config scrapes LXD metrics from a CSAR server.
+# Deploy this inside the monitoring container.
+#
+# Replace all <PLACEHOLDER> values with your own.
+#
+# References:
+#   https://documentation.ubuntu.com/lxd/en/latest/metrics/
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+
+  - job_name: lxd
+    metrics_path: '/1.0/metrics'
+    scheme: 'https'
+    static_configs:
+      - targets:
+          - '<YOUR_EDGE_HOST>:8444'
+          # Add additional servers as needed:
+          # - '<YOUR_UEDGE_HOST>:8444'
+    tls_config:
+      insecure_skip_verify: true
+      ca_file: 'tls/server.crt'
+      cert_file: 'tls/metrics.crt'
+      key_file: 'tls/metrics.key'

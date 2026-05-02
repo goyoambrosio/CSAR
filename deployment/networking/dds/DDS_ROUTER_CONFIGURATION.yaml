@@ -1,0 +1,31 @@
+# DDS Router Configuration Template
+#
+# This configuration connects a remote ROS 2 node to the CSAR infrastructure
+# over WAN via a DDS Router (eProsima).
+#
+# Replace all <PLACEHOLDER> values with your own.
+#
+# References:
+#   https://eprosima-dds-router.readthedocs.io/en/latest/
+#
+# Usage:
+#   docker run -it --net=host \
+#     -v $(pwd)/DDS_ROUTER_CONFIGURATION.yaml:/root/DDS_ROUTER_CONFIGURATION.yaml \
+#     ubuntu-ddsrouter:<VERSION> ddsrouter -c /root/DDS_ROUTER_CONFIGURATION.yaml
+
+version: v5.0
+
+participants:
+
+  # Local ROS 2 domain on the remote host
+  - name: ROS_2_LAN
+    kind: local
+    domain: <YOUR_ROS_DOMAIN_ID>   # Must match the ROS_DOMAIN_ID in your CSAR containers
+
+  # WAN connection to the CSAR router
+  - name: Router_Client
+    kind: wan
+    connection-addresses:
+      - ip: <YOUR_CSAR_ROUTER_PUBLIC_IP>
+        port: 8883
+        transport: tcp

@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this framework or reference this work, please cite it as follows."
+type: software
+title: "CSAR: Containerized System Architecture for Robotics"
+abstract: >
+  CSAR is a container-centric architectural framework designed for robotics
+  teams and the edge–cloud continuum. It combines LXC/LXD-based system
+  containerization, ROS 2/DDS-based communication, and a three-layer edge
+  infrastructure to provide strong isolation, controlled resource sharing,
+  and topology-aware networking for distributed robotic applications.
+authors:
+  - family-names: Ambrosio-Cestero
+    given-names: Gregorio
+    email: gambrosio@uma.es
+    affiliation: "MAPIR Group, University of Málaga"
+    orcid: "https://orcid.org/0000-0002-1159-0750"
+  - family-names: Galindo Andrades
+    given-names: Cipriano
+    email: cgalindo@uma.es
+    affiliation: "MAPIR Group, University of Málaga"
+  - family-names: Gonzalez-Jimenez
+    given-names: Javier
+    email: javiergonzalez@uma.es
+    affiliation: "MAPIR Group, University of Málaga"
+  - family-names: Ruiz-Sarmiento
+    given-names: Jose-Raul
+    email: jotaraul@uma.es
+    affiliation: "MAPIR Group, University of Málaga"
+keywords:
+  - robotics
+  - containerization
+  - LXC/LXD
+  - ROS 2
+  - DDS
+  - edge computing
+  - multi-user infrastructure
+  - reproducibility
+  - GPU sharing
+  - edge-cloud continuum
+license: Apache-2.0
+repository-code: "https://github.com/mapirgroup/mapir-csar"  # update when published
+# doi: ""        # add DOI when available
+# date-released: ""  # add release date
