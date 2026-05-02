@@ -4,7 +4,7 @@ This repository accompanies the paper:
 
 > **CSAR: Containerized System Architecture for Robotics**  
 > Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento
-> MAPIR Group, University of Málaga  
+> [MAPIR Group](https://mapir.isa.uma.es/mapirwebsite/), University of Málaga  
 > _[Link to paper / preprint — to be added upon publication]_
 
 ---
