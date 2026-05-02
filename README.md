@@ -1,11 +1,11 @@
-# CSAR — Containerized System Architecture for Robotics
+# CSAR: Containerized System Architecture for Robotics
 
 ![CSAR architectural framework](./assets/images/CSAR_FULL_NO_TITLE.png)
 
 This repository accompanies the paper:
 
 > **CSAR: Containerized System Architecture for Robotics**  
-> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento.
+> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento.  
 > [MAPIR Group](https://mapir.isa.uma.es/), [University of Málaga](https://www.uma.es/)  
 > _[Link to paper / preprint — to be added upon publication]_
 
