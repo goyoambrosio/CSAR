@@ -42,6 +42,7 @@ mapir-csar/
 ├── docs/
 │   ├── architecture.md              # CSAR layer descriptions and design rationale
 │   ├── design-principles.md         # Core conceptual principles
+│   ├── glossary.md                  # CSAR-specific terminology
 │   ├── networking.md                # Networking model: DNS, overlay, DDS routing
 │   ├── user-guide.md                # End-user guide (containers, images, SSH access)
 │   └── administration-guide.md      # Admin guide (account creation, monitoring)
