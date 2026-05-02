@@ -1,0 +1,46 @@
+# CSAR Per-User DNS systemd Service Template
+#
+# This service registers the per-user LXD virtual bridge (lxdbr-<ADDUID>)
+# with systemd-resolved so that container FQDNs of the form
+#   <container>.<username>.<server>.mapir
+# are resolvable from the host and from other containers.
+#
+# One instance of this service must be created per CSAR user, by the
+# administrator, immediately after creating the user's LXD network.
+#
+# Installation:
+#   sudo cp lxd-dns-lxdbr-ADDUID.service \
+#            /etc/systemd/system/lxd-dns-lxdbr-<ADDUID>.service
+#   # Then replace all <PLACEHOLDER> values in the installed file.
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now lxd-dns-lxdbr-<ADDUID>.service
+#
+# Verification:
+#   sudo systemctl status lxd-dns-lxdbr-<ADDUID>.service
+#   resolvectl status lxdbr-<ADDUID>
+#
+# If the service file is edited after installation:
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart lxd-dns-lxdbr-<ADDUID>.service
+#
+# Replace all <PLACEHOLDER> values before use:
+#   <ADDUID>    Unix UID of the user (e.g. 1003)
+#   <BRIDGE_IP> Gateway IP of the user's virtual bridge (e.g. 10.2.3.1)
+#   <USERNAME>  CSAR username (e.g. alice)
+#   <SERVER>    Server name (e.g. uedge or edge)
+
+[Unit]
+Description=LXD per-link DNS configuration for lxdbr-<ADDUID>
+
+BindsTo=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device
+After=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/resolvectl dns    lxdbr-<ADDUID> <BRIDGE_IP>
+ExecStart=/usr/bin/resolvectl domain lxdbr-<ADDUID> '~<USERNAME>.<SERVER>.mapir'
+ExecStopPost=/usr/bin/resolvectl revert lxdbr-<ADDUID>
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device

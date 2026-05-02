@@ -1,0 +1,56 @@
+# CSAR Per-User LXD Network (Virtual Bridge) Template
+#
+# This is the LXD network configuration for one CSAR user.
+# It defines the virtual bridge (lxdbr-<ADDUID>), its IP subnet,
+# its DNS domain, and the dnsmasq rules that govern name resolution
+# within the user's container network.
+#
+# Created by the administrator during account setup with:
+#   lxc network create lxdbr-<ADDUID>
+#   lxc network edit   lxdbr-<ADDUID>   # paste this content
+#
+# Or apply directly from this file:
+#   cat lxdbr-ADDUID.yaml | lxc network edit lxdbr-<ADDUID>
+#
+# After editing, the DNS systemd service must also be updated.
+# See lxd-dns-lxdbr-ADDUID.service in this directory.
+#
+# Replace all <PLACEHOLDER> values before use:
+#   <ADDUID>      Unix UID of the user (e.g. 1003)
+#   <N>           Last 2 digits of the UID used for IP addressing (e.g. 03)
+#   <USERNAME>    CSAR username (e.g. alice)
+#   <SERVER>      Server name (e.g. uedge or edge)
+#   <SERVER_ID>   Server IP octet (1 for edge, 2 for uedge)
+#   <DNS_SERVER_1> Institution primary DNS (e.g. 150.214.40.11)
+#   <DNS_SERVER_2> Institution secondary DNS (e.g. 150.214.40.12)
+#   <ROUTER_IP>   CSAR router IP for .mapir resolution (e.g. 150.214.109.140)
+
+name: lxdbr-<ADDUID>
+description: "Network for CSAR user <USERNAME> (project user-<ADDUID>)"
+type: bridge
+managed: true
+status: Created
+
+config:
+  dns.domain: <USERNAME>.<SERVER>.mapir
+  ipv4.address: 10.<SERVER_ID>.<N>.1/24
+  ipv4.nat: "true"
+
+  # dnsmasq rules for this user's virtual bridge:
+  #   - Forward .uedge.mapir queries to the local systemd-resolved stub
+  #     (which in turn uses the per-bridge DNS registered by the service)
+  #   - Forward .mapir queries to the CSAR router (cross-server resolution)
+  #   - Forward all other queries to institution DNS servers
+  raw.dnsmasq: |
+    server=<DNS_SERVER_1>
+    server=<DNS_SERVER_2>
+    server=/<SERVER>.mapir/127.0.0.53
+    server=/mapir/<ROUTER_IP>
+    domain-needed
+    bogus-priv
+    no-hosts
+    no-negcache
+    no-poll
+
+used_by:
+  - /1.0/profiles/default?project=user-<ADDUID>
