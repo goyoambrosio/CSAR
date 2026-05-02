@@ -1,0 +1,46 @@
+# CSAR DDS Router Configuration — Client Side (Remote Host)
+#
+# This configuration runs on a remote host (laptop, robot, external machine)
+# that needs to communicate with ROS 2 nodes running inside CSAR over WAN.
+#
+# It connects to the CSAR discovery container (ddsrouter_server.yaml) and
+# bridges the local ROS 2 domain to the CSAR network transparently.
+#
+# Usage (Docker):
+#   mkdir -p ~/dds_router_ws
+#   cp ddsrouter_client.yaml ~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml
+#   # Edit the file and replace all placeholders.
+#   docker run -it --net=host \
+#     -v ~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml:/root/DDS_ROUTER_CONFIGURATION.yaml \
+#     ubuntu-ddsrouter:<VERSION> ddsrouter -c /root/DDS_ROUTER_CONFIGURATION.yaml
+#
+# Keep this terminal open while running ROS 2 nodes. The router affects all
+# DDS traffic on the host, so run your ROS 2 nodes from a separate terminal.
+#
+# Replace all <PLACEHOLDER> values before use:
+#   <ROS_DOMAIN_ID>      The ROS_DOMAIN_ID used by local ROS 2 nodes (e.g. 3)
+#   <ROUTER_PUBLIC_IP>   Public IP of the CSAR router (e.g. 150.214.109.140)
+#   <WAN_PORT>           The port exposed by the CSAR discovery container
+#                        (must match <WAN_PORT> in ddsrouter_server.yaml)
+#
+# Note on CycloneDDS (ROS 2 Humble / Ubuntu 22.04):
+#   If you encounter out-of-memory errors with FastDDS, switch to CycloneDDS:
+#     sudo apt install ros-humble-rmw-cyclonedds-cpp
+#     export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+version: v5.0
+
+participants:
+
+  # Local ROS 2 domain on this remote host
+  - name: ROS_2_LAN
+    kind: local
+    domain: <ROS_DOMAIN_ID>
+
+  # WAN connection to the CSAR discovery container
+  - name: Router_Client
+    kind: wan
+    connection-addresses:
+      - ip: <ROUTER_PUBLIC_IP>
+        port: <WAN_PORT>
+        transport: tcp

@@ -1,0 +1,72 @@
+# CSAR DDS Router Configuration — Server Side (Discovery Container)
+#
+# This configuration runs inside a CSAR container on the edge server.
+# It acts simultaneously as:
+#   - A WAN repeater: accepts TCP connections from remote nodes over the
+#     secure overlay or directly from the internet (via NAT on the router)
+#   - A Discovery Server: allows remote ROS 2 nodes to discover topics and
+#     services on the CSAR internal network using the Super Client protocol
+#
+# In the CSAR reference deployment, this config is used in containers such
+# as discovery.csar.<server>.mapir or discovery-<name>.csar.<server>.mapir.
+#
+# Replace all <PLACEHOLDER> values before use:
+#   <ROUTER_PUBLIC_IP>   Public IP of the CSAR router (e.g. 150.214.109.140)
+#   <WAN_PORT>           NAT port on the router forwarded to this container
+#                        (each discovery container uses a different port,
+#                        e.g. 50000, 50001, 50002 ...)
+#   <CONTAINER_IP>       Internal IP of this container (e.g. 10.2.2.142)
+#   <DS_ID_1>            Discovery Server GUID ID for the UDP listener (e.g. 1)
+#   <DS_ID_2>            Discovery Server GUID ID for the TCP listener (e.g. 2)
+#
+# Notes:
+#   - Each discovery container must use a unique set of DS IDs and WAN port.
+#   - The router must have a NAT rule forwarding <WAN_PORT>/tcp to
+#     <CONTAINER_IP>:50000 (or whichever port you choose as the listening port).
+#   - The TCP Discovery Server listener (port 42100) is needed for remote nodes
+#     that cannot use UDP (e.g. across NAT or 5G links).
+
+version: v5.0
+
+participants:
+
+  # WAN repeater: accepts connections from remote DDS Router clients
+  - name: Router_Repeater
+    kind: wan
+    listening-addresses:
+      - ip: <ROUTER_PUBLIC_IP>
+        port: <WAN_PORT>
+        transport: tcp
+
+  # Discovery Server — UDP (for local or overlay-connected nodes)
+  - name: ROS_2_DS_Server_UDP
+    kind: discovery-server
+    discovery-server-guid:
+      ros-discovery-server: true
+      id: <DS_ID_1>
+    listening-addresses:
+      - ip: <CONTAINER_IP>
+        port: 11811
+
+  # Discovery Server — TCP (for remote nodes over WAN / 5G)
+  - name: ROS_2_DS_Server_TCP
+    kind: discovery-server
+    discovery-server-guid:
+      ros-discovery-server: true
+      id: <DS_ID_2>
+    listening-addresses:
+      - ip: <CONTAINER_IP>
+        port: 42100
+        transport: tcp
+
+  # Optional: uncomment to add a local ROS 2 participant on a specific domain
+  # - name: ROS_2_Local
+  #   kind: local
+  #   domain: <ROS_DOMAIN_ID>
+
+  # Optional: uncomment for debugging (logs all discovered topics and data)
+  # - name: Echo_Participant
+  #   kind: echo
+  #   discovery: true
+  #   data: false
+  #   verbose: true

@@ -1,0 +1,43 @@
+# CSAR DDS Router systemd Service Template
+#
+# This service runs the eProsima DDS Router as a persistent daemon inside
+# a CSAR container. It is used to bridge ROS 2 / DDS traffic between the
+# CSAR internal network and remote nodes connected via the secure overlay.
+#
+# In the CSAR reference deployment, one instance of this service runs in
+# a dedicated discovery container (e.g. discovery.csar.<server>.mapir).
+# The container is created from the Vulcanexus image which includes the
+# DDS Router binary at /opt/vulcanexus/jazzy/bin/ddsrouter.
+#
+# Installation (inside the discovery container):
+#   sudo cp ddsrouter.service /etc/systemd/system/ddsrouter.service
+#   sudo cp ddsrouter_server.yaml /home/ubuntu/ddsrouter_conf.yaml
+#   # Edit /home/ubuntu/ddsrouter_conf.yaml and replace all placeholders.
+#   # Test manually first:
+#   /opt/vulcanexus/jazzy/bin/ddsrouter -c /home/ubuntu/ddsrouter_conf.yaml
+#   # If no errors, enable the service:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ddsrouter.service
+#   sudo systemctl status ddsrouter.service
+#
+# If the config file is changed:
+#   sudo systemctl restart ddsrouter.service
+#
+# References:
+#   https://eprosima-dds-router.readthedocs.io/
+
+[Unit]
+Description=CSAR DDS Router — Discovery Server and WAN repeater
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/vulcanexus/jazzy/bin/ddsrouter -c /home/ubuntu/ddsrouter_conf.yaml
+Restart=always
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu
+Environment="LD_LIBRARY_PATH=/opt/vulcanexus/jazzy/lib"
+
+[Install]
+WantedBy=multi-user.target
