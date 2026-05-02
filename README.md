@@ -1,5 +1,7 @@
 # CSAR — Containerized System Architecture for Robotics
 
+![CSAR architectural framework](./assets/images/CSAR_FULL_NO_TITLE.png)
+
 This repository accompanies the paper:
 
 > **CSAR: Containerized System Architecture for Robotics**  
