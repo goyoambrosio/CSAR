@@ -1,0 +1,74 @@
+# CSAR GUI / X11 LXD Profile Template
+#
+# This profile enables graphical application support inside a container by
+# forwarding the X11 display and PulseAudio socket from the host.
+# It is applied in addition to the default profile (and optionally gpu).
+#
+# Usage:
+#   lxc launch <image> <container> --profile default --profile gui
+#   # or, to add to an existing container:
+#   lxc profile add <container> gui
+#   lxc restart <container>
+#
+# Requirements:
+#   - An X11 server must be running on the host or accessible via SSH forwarding
+#   - PulseAudio must be running on the host (for audio support)
+#   - The container must have x11-apps and pulseaudio installed:
+#       sudo apt install x11-apps mesa-utils pulseaudio
+#
+# Notes:
+#   - environment.DISPLAY is set to :0 (container-local display)
+#   - The X0 proxy device forwards the host's X display to the container
+#   - The PASocket1 proxy device forwards the PulseAudio socket
+#   - raw.idmap maps the host user's UID/GID into the container's default
+#     user (ubuntu, UID 1000). Adjust the host UID/GID as needed.
+#   - CSAR containers typically use SSH X11 forwarding (ForwardX11 yes)
+#     rather than this profile for remote graphical access. This profile
+#     is more useful for local desktop setups.
+#
+# To apply: lxc profile edit gui < gui.yaml
+
+config:
+  environment.DISPLAY: ":0"
+  environment.PULSE_SERVER: unix:/var/pulse-native
+  nvidia.driver.capabilities: all
+  nvidia.runtime: "true"
+  raw.idmap: "both <HOST_UID> 1000"   # replace <HOST_UID> with: id -u on the host
+
+  user.user-data: |
+    #cloud-config
+    runcmd:
+      - 'sed -i "s/; enable-shm = yes/enable-shm = no/g" /etc/pulse/client.conf'
+    packages:
+      - x11-apps
+      - mesa-utils
+      - pulseaudio
+
+description: "CSAR GUI profile — X11 and PulseAudio forwarding"
+
+devices:
+
+  X0:
+    bind: container
+    connect: unix:@/tmp/.X11-unix/X1   # host X display socket
+    listen: unix:@/tmp/.X11-unix/X0    # container X display socket
+    security.gid: "1000"
+    security.uid: "1000"
+    type: proxy
+
+  PASocket1:
+    bind: container
+    connect: unix:/run/user/<HOST_UID>/pulse/native   # host PulseAudio socket — replace <HOST_UID>
+    listen: unix:/var/pulse-native
+    security.gid: "1000"
+    security.uid: "1000"
+    uid: "1000"
+    gid: "1000"
+    mode: "0777"
+    type: proxy
+
+  mygpu:
+    type: gpu                          # optional — remove if GPU not needed for GUI workloads
+
+name: gui
+used_by: []

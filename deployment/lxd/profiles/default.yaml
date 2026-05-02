@@ -1,0 +1,31 @@
+# CSAR Default LXD Profile Template
+#
+# This profile is applied automatically to every container created by a CSAR
+# user. It defines the root disk (storage pool) and the network interface
+# (per-user virtual bridge).
+#
+# One instance of this profile exists per user, scoped to their LXD project
+# (user-<uid>). It is managed by the CSAR administrator.
+#
+# To apply: lxc profile edit default --project user-<uid> < default.yaml
+#
+# Replace all <PLACEHOLDER> values with your own.
+
+config: {}
+
+description: "CSAR default profile for user <USERNAME> (uid: <ADDUID>)"
+
+devices:
+
+  root:
+    path: /
+    pool: <DEFAULT_POOL_NAME>   # e.g. pool1 (NVMe, fast) — primary execution pool
+    type: disk
+
+  eth0:
+    name: eth0
+    network: lxdbr-<ADDUID>     # per-user virtual bridge
+    type: nic
+
+name: default
+used_by: []

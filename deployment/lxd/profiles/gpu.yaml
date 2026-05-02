@@ -1,0 +1,42 @@
+# CSAR GPU Passthrough LXD Profile Template
+#
+# This profile grants a container direct access to one or more NVIDIA GPUs
+# on the host, achieving near-native GPU performance (CUDA, cuDNN, etc.).
+# It is applied in addition to the default profile.
+#
+# Usage:
+#   lxc launch <image> <container> --profile default --profile gpu
+#   # or, to add to an existing container:
+#   lxc profile add <container> gpu
+#   lxc restart <container>
+#
+# Requirements:
+#   - NVIDIA drivers installed on the host (Layer 0)
+#   - nvidia.runtime and nvidia.driver.capabilities set in container config
+#   - The container image must include compatible CUDA libraries
+#
+# Notes:
+#   - CSAR does not enforce GPU memory quotas. Coordinate with other users
+#     to avoid resource contention during intensive workloads.
+#   - To assign a specific GPU (by PCI address), replace the generic gpu
+#     device with: pci: "0000:01:00.0" (use lspci to find the address).
+#
+# To apply: lxc profile edit gpu < gpu.yaml
+
+config:
+  nvidia.driver.capabilities: all   # expose all driver capabilities (compute, graphics, etc.)
+  nvidia.runtime: "true"            # inject the NVIDIA container runtime into the container
+
+description: "CSAR GPU passthrough profile — grants access to all available GPUs"
+
+devices:
+
+  gpu:
+    type: gpu                        # expose all GPUs on the host to this container
+    # To expose a specific GPU by ID, uncomment and set:
+    # id: "0"                        # GPU index (0, 1, 2, ...)
+    # To expose a specific GPU by PCI address, uncomment and set:
+    # pci: "0000:01:00.0"
+
+name: gpu
+used_by: []
