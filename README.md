@@ -3,15 +3,15 @@
 This repository accompanies the paper:
 
 > **CSAR: Containerized System Architecture for Robotics**  
-> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento
-> [MAPIR Group](https://mapir.isa.uma.es/mapirwebsite/), University of Málaga  
+> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento\
+> [MAPIR Group](https://mapir.isa.uma.es/mapirwebsite/), University of Málaga\
 > _[Link to paper / preprint — to be added upon publication]_
 
 ---
 
 ## What is CSAR?
 
-CSAR is a **conceptual and architectural framework** for organizing shared robotics infrastructure in research laboratories and the edge–cloud continuum. It is not a product or a platform — it is an operating model.
+CSAR is a **conceptual and architectural framework** for organizing shared infrastructure in robotics laboratories and the edge–cloud continuum. It is not a product or a platform — it is an operating model.
 
 CSAR addresses persistent challenges in multi-user robotics teams: dependency isolation, reproducibility, efficient sharing of specialized hardware (especially GPUs), and deployment across heterogeneous environments. It combines:
 
