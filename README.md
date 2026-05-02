@@ -1,19 +1,17 @@
 # CSAR — Containerized System Architecture for Robotics
 
-![CSAR architectural framework](./assets/images/CSAR_FULL_NO_TITLE.png)
-
 This repository accompanies the paper:
 
 > **CSAR: Containerized System Architecture for Robotics**  
-> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Javier Gonzalez-Jimenez, Jose-Raul Ruiz-Sarmiento\
-> [MAPIR Group](https://mapir.isa.uma.es/mapirwebsite/), University of Málaga\
+> Gregorio Ambrosio-Cestero, Cipriano Galindo Andrades, Jose-Raul Ruiz-Sarmiento, Javier Gonzalez-Jimenez  
+> MAPIR Group, University of Málaga  
 > _[Link to paper / preprint — to be added upon publication]_
 
 ---
 
 ## What is CSAR?
 
-CSAR is a **conceptual and architectural framework** for organizing shared infrastructure in robotics laboratories and the edge–cloud continuum. It is not a product or a platform — it is an operating model.
+CSAR is a **conceptual and architectural framework** for organizing shared robotics infrastructure in research laboratories and the edge–cloud continuum. It is not a product or a platform — it is an operating model.
 
 CSAR addresses persistent challenges in multi-user robotics teams: dependency isolation, reproducibility, efficient sharing of specialized hardware (especially GPUs), and deployment across heterogeneous environments. It combines:
 
@@ -34,9 +32,10 @@ The framework is structured into three functional layers:
 ## Repository Contents
 
 ```
-mapir-csar/
+CSAR/
 ├── README.md                        # This file
 ├── CITATION.cff                     # Machine-readable citation
+├── CHANGELOG.md                     # Version history
 ├── LICENSE                          # Apache 2.0
 │
 ├── docs/
@@ -49,23 +48,15 @@ mapir-csar/
 │
 ├── deployment/
 │   ├── README.md                    # How to read and adapt these templates
-│   ├── lxd/
-│   │   ├── profiles/                # LXD profile YAML templates
-│   │   └── cloud-init/              # cloud-init stubs for container bootstrap
-│   ├── networking/
-│   │   ├── overlay/                 # Secure overlay (ZeroTier) config templates
-│   │   └── dds/                     # DDS Router + Discovery Server config
-│   └── monitoring/
-│       ├── prometheus/              # Prometheus config for LXD metrics
-│       ├── loki/                    # Loki log aggregation setup
-│       └── grafana/                 # Grafana installation notes
+│   ├── lxd/profiles/                # LXD profile templates (default, gpu, gui)
+│   ├── networking/dns/              # Per-user virtual bridge and DNS service templates
+│   ├── networking/dds/              # DDS Router service and config templates
+│   └── monitoring/prometheus/       # Prometheus config for LXD metrics
 │
 ├── use-cases/
 │   ├── README.md                    # Overview of both use cases
 │   ├── uc1-slam-5g/                 # Edge-offloaded 3D SLAM over 5G
-│   │   └── README.md
 │   └── uc2-semantic-mapping/        # GPU-accelerated distributed semantic mapping
-│       └── README.md
 │
 └── paper/
     └── README.md                    # Paper reference, abstract, authors
