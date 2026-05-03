@@ -39,6 +39,10 @@ CSAR/
 ├── CITATION.cff                     # Machine-readable citation
 ├── CHANGELOG.md                     # Version history
 ├── LICENSE                          # Apache 2.0
+|
+├── bin/
+│   ├── csar                         # CSAR command-line tool
+│   └── README.md                    # Installation and subcommand reference
 │
 ├── docs/
 │   ├── architecture.md              # CSAR layer descriptions and design rationale
