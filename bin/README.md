@@ -170,8 +170,6 @@ sudo sensors-detect            # run once to detect hardware
 
 ## Notes
 
-- `restart-all-dns` contains internal comments in Spanish — these are
-  harmless and may be cleaned up in a future version.
 - `tempcpu` uses `k10temp` (AMD) sensor naming. On Intel hosts the
   sensor block name will differ and the `awk` pattern may need
   adjustment.
