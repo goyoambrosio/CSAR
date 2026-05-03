@@ -45,6 +45,7 @@ CSAR/
 │   ├── design-principles.md         # Core conceptual principles
 │   ├── glossary.md                  # CSAR-specific terminology
 │   ├── networking.md                # Networking model: DNS, overlay, DDS routing
+│   ├── reference-guide.md           # Complete user and admin reference
 │   ├── user-guide.md                # End-user guide (containers, images, SSH access)
 │   └── administration-guide.md      # Admin guide (account creation, monitoring)
 │
