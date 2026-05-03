@@ -52,5 +52,3 @@ config:
     no-negcache
     no-poll
 
-used_by:
-  - /1.0/profiles/default?project=user-<ADDUID>
