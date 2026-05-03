@@ -50,8 +50,8 @@ The researcher controls the experiment via SSH from the remote laptop and receiv
 
 **Edge server (CSAR):**
 - CSAR account on `uedge` (or equivalent)
-- Image: `tuxlab-jazzy-ros2-humble-cuda:2.1` (for SLAM container)
-- Image: `tuxlab-jazzy-ros2-humble:2.1` (for visualization container)
+- Image: `tuxlab-jazzy-ros2-humble-cuda:2.x` (for SLAM container)
+- Image: `tuxlab-jazzy-ros2-humble:2.x` (for visualization container)
 - GPU available (any NVIDIA with CUDA 12.x)
 
 ---
@@ -70,7 +70,7 @@ sudo zerotier-cli join <YOUR_OVERLAY_NETWORK_ID>
 
 ### 2. Configure the DDS Router on the remote laptop
 
-Create `~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml` (see [`deployment/networking/dds/ddsrouter_client.yaml`](../../deployment/networking/dds/ddsrouter_client.yaml)):
+Create `~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml` (see template at [`deployment/networking/dds/`](../../deployment/networking/dds/)):
 
 ```yaml
 version: v5.0
@@ -135,9 +135,13 @@ The researcher accesses RViz output via X11 forwarding over the SSH session.
 
 ## Dataset
 
-The dataset used in the paper consists of LiDAR and odometry recordings from the Hunter 2.0 mobile platform. It is non-trivial both in spatial scale and data volume, representative of bandwidth-demanding field deployments.
+The dataset used in the paper consists of LiDAR and odometry recordings from the Hunter 2.0 mobile platform, equipped with an Ouster OS1-32 LiDAR. It covers approximately 1 km of trajectory around the Computer Science School at the University of Málaga and is non-trivial both in spatial scale and data volume, representative of bandwidth-demanding field deployments.
 
-Dataset availability: _[to be linked when published]_
+The dataset is publicly available on Zenodo:
+
+> Anaya Palacios, F., Galindo, C., González-Jiménez, J. (2025).
+> *Mobile Robot Dataset with Ouster OS1-32 LiDAR at the University of Málaga.*
+> Zenodo. https://doi.org/10.5281/zenodo.15301791
 
 ---
 
