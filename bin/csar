@@ -49,7 +49,7 @@ function handle_restart_dns {
     fi
 
     echo "Restarting lxd-dns-lxdbr service for UID: $USER_UID"
-    sudo systemctl restart --now "lxd-dns-lxdbr-$USER_UID"
+    sudo systemctl restart "lxd-dns-lxdbr-$USER_UID"
 }
 
 # Function to handle the 'restart-all-dns' command (All users) — Admin only
@@ -221,5 +221,6 @@ case "$1" in
         echo "  gpu [-c|--cmd]                   GPU usage per container"
         echo "  tempgpu [-w] [-i <sec>]          GPU temperatures & health"
         echo "  tempcpu [-w] [-i <sec>]          Host CPU/NVMe temperatures"
+        exit 1
         ;;
 esac
