@@ -1,51 +1,76 @@
 # CSAR Administration Guide
 
-This guide covers CSAR system administration tasks: creating and deleting user accounts, managing per-user networking, setting up monitoring, and remote power management.
+**Containerized System Architecture for Robotics**
 
-> **Note:** This guide assumes you are the CSAR administrator with host-level `sudo` access on the servers. Regular CSAR users should refer to the [User Guide](user-guide.md).
+Gregorio Ambrosio Cestero (`gambrosio@uma.es`)
+
+> This guide covers CSAR system administration tasks. It assumes you are
+> the CSAR administrator with host-level `sudo` access on the servers.
+> Regular CSAR users should refer to the
+> [Reference Guide](reference-guide.md) instead.
 
 ---
 
-## Creating a User Account
+## Table of Contents
 
-The following procedure applies to a server configured with LXD using per-user projects and per-user virtual bridges. Adapt the network prefix (`10.2.x.x`) and DNS domain (`uedge.mapir`) for your server.
+1. [Creating a User Account](#1-creating-a-user-account)
+2. [Deleting a User Account](#2-deleting-a-user-account)
 
-### Step 1 — Create the Unix user
+---
+
+## 1. Creating a User Account
+
+The following procedure applies to `uedge`. Adapt the network prefix
+(`10.2.x.x`) and DNS domain (`uedge.mapir`) for `edge` where noted.
+
+### Step 1 — Create the Unix user account
 
 ```bash
 USERNAME="<new-username>"
+
 sudo adduser $USERNAME
-sudo adduser $USERNAME csar    # use 'lxd' group on some configurations
+sudo adduser $USERNAME csar    # use 'lxd' instead of 'csar' on edge
 ```
 
-Record the new user's UID:
+Record the new user's UID and compute the subnet index `N`:
 
 ```bash
 ADDUID=$(id -u "$USERNAME")
 echo $ADDUID
+
 N=$(printf "%02d" $((ADDUID % 100)))
+echo $N
 ```
 
-### Step 2 — Initialize the LXD project
-
-Log in once as the new user to trigger project creation, then configure it:
+Log in once as the new user to trigger LXD project initialization,
+then exit immediately:
 
 ```bash
 su $USERNAME
 lxc ls
 exit
-
-lxc project set user-$ADDUID restricted.snapshots allow
 ```
 
-### Step 3 — Create the user's virtual network
+### Step 2 — Configure the LXD project
+
+```bash
+lxc project set user-$ADDUID restricted.snapshots allow
+lxc project show user-$ADDUID    # review — no changes needed here
+```
+
+### Step 3 — Create the user's virtual network and DNS domain
 
 ```bash
 lxc network create lxdbr-$ADDUID
 lxc network set lxdbr-$ADDUID ipv4.address 10.2.$N.1/24
+# On edge use: 10.1.$N.1/24
+
 lxc network set lxdbr-$ADDUID dns.domain "$USERNAME.uedge.mapir"
+# On edge use: "$USERNAME.edge.mapir"
+
 lxc network unset lxdbr-$ADDUID ipv6.nat
 lxc network unset lxdbr-$ADDUID ipv6.address
+
 lxc network set lxdbr-$ADDUID raw.dnsmasq "
 server=/uedge.mapir/127.0.0.53
 server=/mapir/<YOUR_CSAR_ROUTER_IP>
@@ -57,34 +82,51 @@ no-hosts
 no-negcache
 no-poll
 "
+# On edge, replace the first server line with:
+# server=/edge.mapir/127.0.0.53
 ```
 
-Review the result:
+Review the resulting network configuration and fix the description
+if it has a doubled prefix (e.g., `user-user-` → `user-`):
+
 ```bash
 lxc network edit lxdbr-$ADDUID
 ```
 
-### Step 4 — Create the DNS systemd service
+### Step 4 — Create the systemd DNS service for the user
 
-Copy and adapt an existing service unit:
+Copy an existing service file and edit it for the new user.
+**Important:** the substitution commands below must use literal values,
+not shell variables — `systemd` unit files do not expand them.
 
 ```bash
 sudo cp /etc/systemd/system/lxd-dns-lxdbr-<EXISTING_UID>.service \
         /etc/systemd/system/lxd-dns-lxdbr-$ADDUID.service
+
 sudo vi /etc/systemd/system/lxd-dns-lxdbr-$ADDUID.service
 ```
 
-Replace all occurrences of the existing UID, IP, and username with the new values. The service template looks like this:
+Inside `vi`, replace the old values with the new ones:
+
+```
+:%s/<EXISTING_UID>/<NEW_ADDUID>/g
+:%s/10.2.<EXISTING_N>.1/10.2.<NEW_N>.1/g
+:%s/<OLD_USERNAME>.uedge.mapir/<NEW_USERNAME>.uedge.mapir/g
+:wq
+```
+
+The resulting service file should look like this:
 
 ```ini
 [Unit]
 Description=LXD per-link DNS configuration for lxdbr-<ADDUID>
+
 BindsTo=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device
 After=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/resolvectl dns lxdbr-<ADDUID> 10.2.<N>.1
+ExecStart=/usr/bin/resolvectl dns    lxdbr-<ADDUID> 10.2.<N>.1
 ExecStart=/usr/bin/resolvectl domain lxdbr-<ADDUID> '~<USERNAME>.uedge.mapir'
 ExecStopPost=/usr/bin/resolvectl revert lxdbr-<ADDUID>
 RemainAfterExit=yes
@@ -98,22 +140,42 @@ WantedBy=sys-subsystem-net-devices-lxdbr\x2d<ADDUID>.device
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now lxd-dns-lxdbr-$ADDUID.service
+
+# If you edit the service file later, restart with:
+# sudo systemctl restart lxd-dns-lxdbr-$ADDUID.service
+
 sudo systemctl status lxd-dns-lxdbr-$ADDUID
 resolvectl status lxdbr-$ADDUID
+```
+
+Expected output from `resolvectl`:
+
+```
+Link N (lxdbr-<ADDUID>)
+    Current Scopes: DNS
+         Protocols: -DefaultRoute +LLMNR -mDNS -DNSOverTLS DNSSEC=no/unsupported
+Current DNS Server: 10.2.<N>.1
+       DNS Servers: 10.2.<N>.1
+        DNS Domain: ~<USERNAME>.uedge.mapir
 ```
 
 ### Step 6 — Set the default storage pool
 
 ```bash
-lxc profile device set default root pool=<DEFAULT_POOL_NAME> --project user-$ADDUID
-lxc profile show default --project user-$ADDUID
+lxc profile device set default root pool=<DEFAULT_POOL_NAME> \
+    --project user-$ADDUID
+
+lxc profile show default --project user-$ADDUID    # verify
 ```
 
 ### Step 7 — Add the user to the LXD trust list
 
+As the CSAR administrator, generate a trust token:
+
 ```bash
 lxc config trust add
-# When prompted for a name, enter: remote-user-$ADDUID
+# When prompted for a name, enter: remote-user-<ADDUID>
+# Copy the token that is printed.
 ```
 
 Log in as the new user and add the remote:
@@ -121,61 +183,110 @@ Log in as the new user and add the remote:
 ```bash
 ssh $USERNAME@<server>
 lxc remote add <server> https://127.0.0.1:8443
-# Press y and paste the token from the previous step
+# Press y when prompted, then paste the token from the previous step.
 exit
 ```
 
-Back as admin, restrict the trust entry:
+Back as the CSAR administrator, restrict the trust entry:
 
 ```bash
 lxc config trust list
-# Find the fingerprint for remote-user-$ADDUID
+# Find the fingerprint for remote-user-<ADDUID>
+
 lxc config trust edit <fingerprint>
-# Change: restricted: false  ->  restricted: true
+# Change: restricted: false
+# To:     restricted: true
 ```
 
 ### Step 8 — Verify the account
 
+Run a quick sanity check from the administrator account:
+
 ```bash
 lxc launch ubuntu:22.04 c1 -t aws:t2.micro --project user-$ADDUID
 lxc ls --project user-$ADDUID
-ping c1.$USERNAME.<server>.mapir
+ping c1.$USERNAME.uedge.mapir
 ```
+
+Then log in as the new user and run a final check:
+
+```bash
+ssh $USERNAME@<server>
+
+lxc remote list
+lxc image list <server>:
+lxc ls
+csar launch <server>:tuxlab-jazzy:1.1 t1
+ssh -X ubuntu@t1.$(whoami).uedge.mapir
+ls ~/shares
+ls ~/uploads
+exit
+```
+
+If all steps produce the expected output, the account is ready.
 
 ---
 
-## Deleting a User Account
+## 2. Deleting a User Account
+
+Log in as the CSAR administrator before starting.
 
 ```bash
 USERNAME="<username-to-delete>"
 DELUID=$(id -u "$USERNAME")
+```
 
-# Remove Unix user
+### Step 1 — Remove the Unix user account
+
+```bash
 sudo deluser $USERNAME --remove-home
+```
 
-# Clean up LXD resources
+### Step 2 — Delete all LXD resources in the user's project
+
+```bash
 lxc project switch user-$DELUID
-lxc list
-lxc delete <instance> --force    # repeat for all instances
-lxc image list
-lxc image delete <fingerprint>   # repeat for all images
-lxc project delete user-$DELUID
 
-# Remove the virtual network
+lxc list
+lxc delete <instance> --force    # repeat for every instance in the list
+
+lxc image list
+lxc image delete <FINGERPRINT>   # repeat for every image in the list
+
+lxc project delete user-$DELUID
+```
+
+### Step 3 — Delete the user's virtual network
+
+```bash
 lxc network list
 lxc network delete lxdbr-$DELUID
+```
 
-# Remove from trust list
+### Step 4 — Remove from the LXD trust list
+
+```bash
 lxc config trust list
-lxc config trust remove <fingerprint>
+# Find the fingerprint for remote-user-<DELUID>
 
-# Remove LXD user state
+lxc config trust remove <FINGERPRINT>
+```
+
+### Step 5 — Remove LXD user state
+
+```bash
+sudo ls -al /var/snap/lxd/common/lxd-user/users/
 sudo rm -rf /var/snap/lxd/common/lxd-user/users/$DELUID
+```
 
-# Remove DNS service
+### Step 6 — Remove the DNS systemd service
+
+```bash
 sudo rm /etc/systemd/system/lxd-dns-lxdbr-${DELUID}.service
 sudo systemctl daemon-reload
 ```
+
+The user and all their associated resources have been fully removed.
 
 ---
 
@@ -301,3 +412,4 @@ The `csar` command is a CSAR-specific wrapper around `lxc`. Key subcommands:
 | `csar restart-dns` | Restart the user's virtual DNS service |
 
 For a full list: `csar --help`
+
