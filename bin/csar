@@ -1,0 +1,225 @@
+#!/bin/bash
+
+# Function to handle the 'free' command
+function handle_free {
+    zfs list | awk '$1 ~ /^pool[0-9]+$/ {print $1,"available storage:", $3}'
+}
+
+# Function to handle the 'containers' command
+# Default: show ZFS containers datasets
+# -r|--run: show running LXD containers (all projects)
+function handle_containers {
+    case "$1" in
+        -r|--run)
+            lxc list --all-projects --format compact -cen4bDmu status=running
+            return $?
+            ;;
+        -h|--help)
+            echo "Usage: $0 containers [-r|--run]"
+            echo "  (no args)     List ZFS container datasets"
+            echo "  -r, --run     List running LXD containers"
+            return 0
+            ;;
+    esac
+
+    (echo "Container Compressed Uncompressed" && \
+     zfs list | grep -E 'pool[0-9]+/containers/' | awk '{print $1, $2, $4}') | column -t
+}
+
+# Function to handle the 'launch' command
+function handle_launch {
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: $0 launch <image-name> <container-name>"
+        return 1
+    fi
+
+    image_name="$1"
+    container_name="$2"
+
+    lxc launch "$image_name" "$container_name" -c nvidia.runtime=true && \
+    lxc config device add "$container_name" gpu gpu
+}
+
+# Function to handle the 'restart-dns' command
+function handle_restart_dns {
+    if [ -n "$SUDO_USER" ]; then
+        USER_UID=$(id -u "$SUDO_USER")
+    else
+        USER_UID=$(id -u)
+    fi
+
+    echo "Restarting lxd-dns-lxdbr service for UID: $USER_UID"
+    sudo systemctl restart --now "lxd-dns-lxdbr-$USER_UID"
+}
+
+# Function to handle the 'restart-all-dns' command (All users) — Admin only
+function handle_restart_all_dns {
+    echo "Searching and restarting all active LXD DNS services..."
+
+    SERVICES=$(systemctl list-units "lxd-dns-lxdbr-*" --type=service --state=active --no-legend | awk '{print $1}')
+
+    if [ -z "$SERVICES" ]; then
+        echo "No active lxd-dns-lxdbr services found."
+        return 0
+    fi
+
+    for svc in $SERVICES; do
+        echo "Restarting $svc..."
+        sudo systemctl restart "$svc"
+    done
+
+    echo "All DNS services have been restarted successfully."
+}
+
+# Function to handle the 'gpu' command
+function handle_gpu {
+    SHOW_CMD=0
+
+    case "$1" in
+        -c|--cmd) SHOW_CMD=1 ;;
+        -h|--help)
+            echo "Usage: $0 gpu [-c|--cmd]"
+            return 0
+            ;;
+    esac
+
+    nvidia-smi --query-compute-apps=pid,used_memory \
+               --format=csv,noheader,nounits 2>/dev/null |
+    while IFS=',' read -r pid mem; do
+        pid=$(echo "$pid" | xargs)
+        mem=$(echo "$mem" | xargs)
+
+        full=$(grep -oP 'lxc\.payload\.\K[^/]+' /proc/$pid/cgroup 2>/dev/null | head -n1)
+        [ -z "$full" ] && continue
+
+        proj=${full%%_*}
+        name=${full#*_}
+        uid=${proj#user-}
+        owner=$(getent passwd "$uid" | cut -d: -f1)
+
+        if [ "$SHOW_CMD" -eq 1 ]; then
+            cmd=$(ps -p "$pid" -o cmd= 2>/dev/null | sed 's/[[:space:]]\+/ /g')
+            printf "PID=%s GPU_MEM=%sMiB project=%s container=%s owner=%s(uid=%s)\n  CMD=%s\n\n" \
+                "$pid" "$mem" "$proj" "$name" "${owner:-UNKNOWN}" "$uid" "${cmd:-UNKNOWN}"
+        else
+            printf "PID=%s GPU_MEM=%sMiB project=%s container=%s owner=%s(uid=%s)\n" \
+                "$pid" "$mem" "$proj" "$name" "${owner:-UNKNOWN}" "$uid"
+        fi
+    done
+}
+
+# Function to handle the 'tempgpu' command
+function handle_tempgpu {
+    INTERVAL=2
+    WATCH=0
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -w|--watch) WATCH=1 ;;
+            -i|--interval) shift; INTERVAL="${1:-2}" ;;
+            -h|--help)
+                echo "Usage: $0 tempgpu [--watch|-w] [--interval|-i <seconds>]"
+                return 0
+                ;;
+        esac
+        shift
+    done
+
+    QUERY="index,name,temperature.gpu,temperature.memory,fan.speed,power.draw,utilization.gpu,utilization.memory"
+    FORMAT="csv,noheader,nounits"
+
+    print_table() {
+        nvidia-smi --query-gpu="$QUERY" --format="$FORMAT" 2>/dev/null | \
+        awk -F',' '
+        BEGIN {
+            printf "%-3s %-32s %-7s %-8s %-8s %-10s %-8s %-8s\n",
+                   "GPU","Name","Temp","VRAM","Fan","Power","GPU%","Mem%";
+        }
+        {
+            for (i=1;i<=NF;i++) gsub(/^ +| +$/,"",$i);
+            vram = ($4=="N/A" || $4=="") ? "--" : $4"°C";
+            printf "%-3s %-32s %-8s %-8s %-8s %-10s %-8s %-8s\n",
+                   $1,$2,$3"°C",vram,$5"%",$6"W",$7"%",$8"%";
+        }'
+    }
+
+    if [ "$WATCH" -eq 1 ]; then
+        while true; do
+            clear
+            date
+            echo
+            print_table
+            sleep "$INTERVAL"
+        done
+    else
+        print_table
+    fi
+}
+
+# Function to handle the 'tempcpu' command
+function handle_tempcpu {
+    INTERVAL=2
+    WATCH=0
+
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -w|--watch) WATCH=1 ;;
+            -i|--interval) shift; INTERVAL="${1:-2}" ;;
+            -h|--help)
+                echo "Usage: $0 tempcpu [--watch|-w] [--interval|-i <seconds>]"
+                return 0
+                ;;
+        esac
+        shift
+    done
+
+    if ! command -v sensors >/dev/null 2>&1; then
+        echo "Error: 'sensors' not found. Install with: sudo apt install lm-sensors"
+        return 1
+    fi
+
+    print_main() {
+        sensors 2>/dev/null | awk '
+          /^k10temp-/ {sec="cpu"; next}
+          /^nvme-pci-/ {sec="nvme"; nvme=$1; next}
+          sec=="cpu" && /^Tctl:/ {print "CPU  " $0}
+          sec=="nvme" && /^Composite:/ {print nvme "  " $0}
+        '
+    }
+
+    if [ "$WATCH" -eq 1 ]; then
+        while true; do
+            clear
+            date
+            echo
+            print_main
+            sleep "$INTERVAL"
+        done
+    else
+        print_main
+    fi
+}
+
+# Main dispatcher
+case "$1" in
+    free)            handle_free ;;
+    containers)      handle_containers "${@:2}" ;;
+    launch)          handle_launch "${@:2}" ;;
+    restart-dns)     handle_restart_dns ;;
+    restart-all-dns) handle_restart_all_dns ;;
+    gpu)             handle_gpu "${@:2}" ;;
+    tempgpu)         handle_tempgpu "${@:2}" ;;
+    tempcpu)         handle_tempcpu "${@:2}" ;;
+    *)
+        echo "Usage: $0 <command>"
+        echo "Commands:"
+        echo "  free                             Show available storage"
+        echo "  containers [-r|--run]            List ZFS containers (or running LXD containers)"
+        echo "  launch <image> <name>            Launch container with GPU"
+        echo "  restart-dns                      Restart LXD DNS (current user)"
+        echo "  restart-all-dns                  Restart ALL active LXD DNS services (Admin only)"
+        echo "  gpu [-c|--cmd]                   GPU usage per container"
+        echo "  tempgpu [-w] [-i <sec>]          GPU temperatures & health"
+        echo "  tempcpu [-w] [-i <sec>]          Host CPU/NVMe temperatures"
+        ;;
+esac
