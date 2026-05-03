@@ -94,7 +94,7 @@ CSAR supports four communication scenarios with increasing scope:
 |----------|-------|-----------|
 | Single container | Intra-host | Standard ROS 2 / DDS (SDP) |
 | Multiple containers, same user | Same broadcast domain | Standard ROS 2 / DDS (SDP) |
-| Multiple users on same server | Cross-subnet | Discovery Server (`discovery.<server>.mapir`) |
+| Multiple users on same server | Cross-subnet | Discovery Server (`discovery.csar.<server>.mapir`) |
 | Remote nodes (WAN) | Cross-network | DDS Router over secure overlay |
 
 For cross-user communication, set:
@@ -112,15 +112,15 @@ CSAR provides pre-built LXD images that users can instantiate in seconds:
 
 | Image | Base OS | Contents |
 |-------|---------|----------|
-| `tuxlab-jazzy:1.x` | Ubuntu 22.04 | NVIDIA drivers, XFCE, utilities |
-| `tuxlab-jazzy-cuda:1.x` | Ubuntu 22.04 | + CUDA, cuDNN, PyTorch, OpenCV |
-| `tuxlab-jazzy-ros2-humble:2.x` | Ubuntu 22.04 | + ROS 2 Humble full desktop |
-| `tuxlab-jazzy-ros2-humble-cuda:2.x` | Ubuntu 22.04 | + ROS 2 Humble + CUDA |
-| `discovery-jazzy-ros2-humble:1.x` | Ubuntu 22.04 | Discovery Server as a service |
-| `dockerlab-jazzy:1.x` | Ubuntu 22.04 | Hybrid LXC/Docker with GPU access |
+| `tuxlab-jazzy:1.1` | Ubuntu 22.04 | NVIDIA drivers, XFCE, utilities |
+| `tuxlab-jazzy-cuda:1.2` | Ubuntu 22.04 | + CUDA, cuDNN, PyTorch, OpenCV |
+| `tuxlab-jazzy-ros2-humble:2.1` | Ubuntu 22.04 | + ROS 2 Humble full desktop |
+| `tuxlab-jazzy-ros2-humble-cuda:2.1` | Ubuntu 22.04 | + ROS 2 Humble + CUDA |
+| `discovery-jazzy-ros2-humble:1.1` | Ubuntu 22.04 | Discovery Server as a service |
+| `dockerlab-jazzy:1.1` | Ubuntu 22.04 | Hybrid LXC/Docker with GPU access |
 | `mosquitto-jazzy:1.0` | Ubuntu 22.04 | MQTT broker |
-| `tuxlab-noble:2.x` | Ubuntu 24.04 | Base development image |
-| `tuxlab-noble-vulcanexus-jazzy-desktop:2.x` | Ubuntu 24.04 | Vulcanexus (eProsima ROS 2) |
+| `tuxlab-noble:2.0` | Ubuntu 24.04 | Base development image |
+| `tuxlab-noble-vulcanexus-jazzy-desktop:2.0` | Ubuntu 24.04 | Vulcanexus (eProsima ROS 2) |
 
 To create a container from an image:
 ```bash

@@ -123,7 +123,7 @@ CSAR is currently based on two servers — `edge` and `uedge`, whose names refle
 ### 2.2 Key Features for Users
 
 - CSAR users have an account with normal Unix user profile (no host-level superuser privileges), but with full LXD permissions to create, delete, and manage their own **containers**, in which they **do have superuser (sudo) privileges**.
-- Each user has a subnet with a dedicated IP address range, automatically or manually assigned to containers. The range per server is a subnetted class A network providing 254 IP addresses. The range is `10.1.<uid>.0/24` on `edge` and `10.2.<uid>.0/24` on `uedge`.
+- Each user has a subnet with a dedicated IP address range, automatically or manually assigned to containers. The range per server is a subnetted class A network providing 254 IP addresses. The range is `10.1.<uid % 1000>.0/24` on `edge` and `10.2.<uid % 1000>.0/24` on `uedge`, where `uid % 1000` is the numeric value of the last three digits of the UID (e.g. UID 1003 → `10.1.3.0/24`).
 - Each user has their own DNS domain: `<username>.edge.mapir` on `edge` and `<username>.uedge.mapir` on `uedge`. For example, if user `foo` on `edge` (with UID 1003) has a container named `mycontainer`, it is identified on the network as `mycontainer.foo.edge.mapir` and has an address such as `10.1.3.36`, where the last byte is assigned automatically by CSAR.
 - Users have access to CSAR-specific images to generate containers. These images allow containers to be created in seconds, incorporating complete operating systems with their drivers, utilities, and development environments.
 
