@@ -413,6 +413,10 @@ The `csar` command is a CSAR-specific wrapper around `lxc`. Key subcommands:
 | `csar free` | Show available space per storage pool |
 | `csar containers` | Show disk usage per container |
 | `csar restart-dns` | Restart the user's virtual DNS service |
+| `restart-all-dns` | Restart ALL active LXD DNS services (Admin Use Only) |
+| `gpu [-c|--cmd]` | GPU usage per container |
+| `tempgpu [-w] [-i <sec>]` | GPU temperatures & health |
+| `tempcpu [-w] [-i <sec>]` | Host CPU/NVMe temperatures |
 
 For a full list: `csar --help`
 
