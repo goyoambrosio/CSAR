@@ -24,6 +24,7 @@ scrape_configs:
           # - '<YOUR_UEDGE_HOST>:8444'
     tls_config:
       insecure_skip_verify: true
+      # Place certificates in /var/snap/prometheus/current/tls/
       ca_file: 'tls/server.crt'
       cert_file: 'tls/metrics.crt'
       key_file: 'tls/metrics.key'
