@@ -842,6 +842,8 @@ http://localhost:8080/grafana/login
 
 CSAR is an advanced system container infrastructure that facilitates the development of distributed robotic solutions. Its networking model is what gives CSAR its extraordinary power: the goal is for solutions implemented in containers to collaborate with each other through connectivity — not only between containers, but also between containers and real physical devices.
 
+![CSAR network architecture overview](../assets/images/csar-network-architecture.png)
+
 ### 8.2 Communication Capabilities
 
 - Acts as a **virtual router** for user networks, so containers can see each other and communicate across different user subnets.
@@ -936,6 +938,8 @@ CSAR's name resolution operates at three levels:
 #### Definition
 
 A **Secure Network Overlay** (SNO) is a virtual network built over a physical or logical network using encryption and authentication mechanisms. CSAR provides this service, allowing devices to interconnect over the internet as if they were on a local network.
+
+![CSAR secure network overlay](../assets/images/csar-secure-network-overlay.png)
 
 This means CSAR can create virtual local networks that connect physical and virtual devices — including containers — regardless of their geographic location, requiring only an internet connection.
 

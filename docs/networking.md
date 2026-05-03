@@ -2,6 +2,8 @@
 
 This document describes the networking architecture of CSAR: the per-user virtual networks, DNS resolution, the secure overlay (ZeroTier), and the DDS routing configuration for ROS 2 across heterogeneous networks.
 
+![CSAR network architecture overview](../assets/images/csar-network-architecture.png)
+
 ---
 
 ## Physical Devices
@@ -66,6 +68,8 @@ CSAR uses a three-level DNS resolution chain:
 ## Secure Network Overlay
 
 CSAR provides a **secure overlay network** service that connects distributed devices (containers, laptops, robots) over the internet as if they were on the same local network. This enables transparent ROS 2 discovery (SDP) across geographically separated nodes.
+
+![CSAR secure network overlay](../assets/images/csar-secure-network-overlay.png)
 
 The overlay is based on [ZeroTier](https://github.com/zerotier/ZeroTierOne) running as a **private controller** on the CSAR router. No dependency on ZeroTier's public infrastructure.
 
