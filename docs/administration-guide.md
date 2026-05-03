@@ -15,6 +15,9 @@ Gregorio Ambrosio Cestero (`gambrosio@uma.es`)
 
 1. [Creating a User Account](#1-creating-a-user-account)
 2. [Deleting a User Account](#2-deleting-a-user-account)
+3. [Monitoring Stack](#3-monitoring-stack)
+4. [Remote Power Management](#4-remote-power-management)
+5. [CSAR-csar-command-reference](#5-CSAR-csar-command-reference)
 
 ---
 
@@ -290,7 +293,7 @@ The user and all their associated resources have been fully removed.
 
 ---
 
-## Monitoring Stack
+## 3. Monitoring Stack
 
 CSAR uses a monitoring container with Prometheus (LXD metrics), Loki (log aggregation), and Grafana (dashboards).
 
@@ -377,7 +380,7 @@ Access at `http://metrics.<your-user>.<server>.mapir:3000` (or via SSH tunnel fr
 
 ---
 
-## Remote Power Management
+## 4. Remote Power Management
 
 If your server supports Wake-on-LAN, you can power it on remotely from another machine on the same network:
 
@@ -400,7 +403,7 @@ ssh -f -N -L 54443:<YOUR_BMC_IP>:54443 <YOUR_ROUTER_USER>@<YOUR_ROUTER_IP>
 
 ---
 
-## CSAR `csar` Command Reference
+## 5. CSAR `csar` Command Reference
 
 The `csar` command is a CSAR-specific wrapper around `lxc`. Key subcommands:
 
