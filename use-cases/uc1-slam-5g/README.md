@@ -50,8 +50,8 @@ The researcher controls the experiment via SSH from the remote laptop and receiv
 
 **Edge server (CSAR):**
 - CSAR account on `uedge` (or equivalent)
-- Image: `tuxlab-jazzy-ros2-humble-cuda:2.x` (for SLAM container)
-- Image: `tuxlab-jazzy-ros2-humble:2.x` (for visualization container)
+- Image: `tuxlab-jazzy-ros2-humble-cuda:2.1` (for SLAM container)
+- Image: `tuxlab-jazzy-ros2-humble:2.1` (for visualization container)
 - GPU available (any NVIDIA with CUDA 12.x)
 
 ---
@@ -70,7 +70,7 @@ sudo zerotier-cli join <YOUR_OVERLAY_NETWORK_ID>
 
 ### 2. Configure the DDS Router on the remote laptop
 
-Create `~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml` (see template at [`deployment/networking/dds/`](../../deployment/networking/dds/)):
+Create `~/dds_router_ws/DDS_ROUTER_CONFIGURATION.yaml` (see [`deployment/networking/dds/ddsrouter_client.yaml`](../../deployment/networking/dds/ddsrouter_client.yaml)):
 
 ```yaml
 version: v5.0
