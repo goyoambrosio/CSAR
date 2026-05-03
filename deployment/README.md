@@ -7,15 +7,12 @@ This directory contains configuration templates for deploying a CSAR infrastruct
 ```
 deployment/
 ├── lxd/
-│   ├── profiles/        LXD profile YAML templates
-│   └── cloud-init/      cloud-init stubs for container bootstrap
+│   └── profiles/        LXD profile YAML templates
 ├── networking/
-│   ├── overlay/         Secure overlay (ZeroTier) config templates
+│   ├── dns/             Per-user virtual bridge and DNS service templates
 │   └── dds/             DDS Router and Discovery Server configs
 └── monitoring/
-    ├── prometheus/      Prometheus config for LXD metrics
-    ├── loki/            Loki setup notes
-    └── grafana/         Grafana installation notes
+    └── prometheus/      Prometheus config for LXD metrics
 ```
 
 ## Before You Start

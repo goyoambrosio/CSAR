@@ -12,9 +12,6 @@ network segments and WAN links.
 | `ddsrouter_server.yaml` | DDS Router config — server side | Inside the CSAR discovery container |
 | `ddsrouter_client.yaml` | DDS Router config — client side | On the remote host (laptop, robot) |
 
-The original `DDS_ROUTER_CONFIGURATION.yaml` stub has been superseded by
-these two role-specific templates.
-
 ---
 
 ## Architecture
